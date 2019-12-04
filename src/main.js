@@ -6,6 +6,15 @@ import vuetify from './plugins/vuetify'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueGoogleCharts from 'vue-google-charts'
+import * as VueGoogleMaps from 'vue2-google-maps'
+
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: 'AIzaSyDfaNlbsN8-AF5Hw4YT6T3kLdeOtl5kTjg',
+    libraries: 'drawing,visualization',
+  },
+  autobindAllEvents: true
+})
 
 Vue.use(VueGoogleCharts)
 

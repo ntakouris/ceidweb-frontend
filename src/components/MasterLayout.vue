@@ -63,7 +63,7 @@
             </v-list-item-content>
             </v-list-item>
 
-            <v-list-item  @click.stop="navigate('/user/explore')">
+            <v-list-item  @click.stop="navigate('/queries')">
             <v-list-item-action>
                 <v-icon>mdi-magnify</v-icon>
             </v-list-item-action>
@@ -92,7 +92,7 @@
             </v-list-item-content>
             </v-list-item>
 
-            <v-list-item  @click.stop="navigate('/admin/explore')">
+            <v-list-item  @click.stop="navigate('/queries?admin=true')">
             <v-list-item-action>
                 <v-icon>mdi-magnify</v-icon>
             </v-list-item-action>

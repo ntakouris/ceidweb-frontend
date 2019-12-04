@@ -37,7 +37,7 @@ export default {
             const { response: data } = await this.axios.post('/admin/purge')
             this.message = response;
         } catch (e) {
-            this.message = e.message;
+            this.message = e.response.data;
         }
 
         this.loading = false
