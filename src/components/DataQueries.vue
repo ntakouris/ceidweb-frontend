@@ -107,6 +107,69 @@
 
     <!-- Visualizations -->
 
+    <GmapMap
+      v-if="data.heatmap"
+      ref="map"
+      style="width: 800px; height: 800px"
+      class="mt-2 mb-2"
+      :center="{lat: patrasLat, lng:patrasLng}"
+      :zoom="12"
+      map-type-id="roadmap"
+      :options="{
+            zoomControl: true,
+            mapTypeControl: false,
+            scaleControl: true,
+            streetViewControl: false,
+            rotateControl: false,
+            fullscreenControl: false,
+            disableDefaultUi: true
+        }"
+    ></GmapMap>
+
+    <div class="mt-2 mb-2" v-if="data.perActivity">
+      <h2>Entries per activity type</h2>
+      <GChart type="BarChart" :data="data.perActivity" />
+    </div>
+
+    <v-spacer class="mb-2" />
+
+    <div v-if="data.mostOccurencesPerActivityHour" class="mb-2">
+      <h2>Weekly activity stats</h2>
+      <v-simple-table :dense="dense" :fixed-header="fixedHeader">
+        <thead>
+          <tr>
+            <th class="text-left">Activity Type</th>
+            <th class="text-left">Hour of most occurences</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="k of Object.keys(data.mostOccurencesPerActivityHour)" :key="k">
+            <td>{{ k }}</td>
+            <td>{{ data.mostOccurencesPerActivityHour[k] }}</td>
+          </tr>
+        </tbody>
+      </v-simple-table>
+    </div>
+
+    <v-spacer class="mb-2" />
+
+    <div v-if="data.mostOccurencesPerActivityWeek">
+      <h2>Daily activity stats</h2>
+      <v-simple-table :dense="dense" :fixed-header="fixedHeader">
+        <thead>
+          <tr>
+            <th class="text-left">Activity Type</th>
+            <th class="text-left">Day of most occurences</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="k of Object.keys(data.mostOccurencesPerActivityWeek)" :key="k">
+            <td>{{ k }}</td>
+            <td>{{ data.mostOccurencesPerActivityWeek[k] }}</td>
+          </tr>
+        </tbody>
+      </v-simple-table>
+    </div>
   </v-col>
 </template>
 
@@ -115,10 +178,66 @@ const availableActivityTypes = ["*", "UNKNOWN", "ON_FOOT", "IN_VEHICLE"];
 
 export default {
   name: "DataQueries",
+  mounted(){
+      var admin = this.$route.query.admin
+      admin = admin ? admin : false
+      this.isAdmin = admin
+
+    const that = this
+    this.$refs.map.$mapPromise.then(map => {
+      that.map = map;
+      });
+    
+  },
+  watch: {
+    data: {
+    immediate: true, 
+    handler (val, oldVal) {
+      if (!this.map){
+        return
+      }
+
+      if(this.heatmap){
+        this.heatmap.map = null
+      }
+
+      this.heatmap = new google.maps.visualization.HeatmapLayer({
+        data: this.data.heatmap.map(x => new google.maps.LatLng(x.lat, x.lng)),
+        map: this.map
+      })
+
+      this.heatmap.setMap(this.map)
+    }
+  }
+  },
   data() {
     return {
+      map: undefined,
+      heatmap: undefined,
+      isAdmin: false,
       data: {
-
+        heatmap: [
+          {lat: 38.230462, lng: 21.75315},
+          {lat: 38.230463, lng: 21.75316},
+          {lat: 38.230464, lng: 21.75317},
+          {lat: 38.230465, lng: 21.75318}
+        ],
+        perActivity: [
+          ['Activity Type', 'Occurences'],
+          ['UNKNOWN', 300],
+          ['ON_FOOT', 900],
+          ['IN_VEHICLE', 1000],
+        ],
+        mostOccurencesPerActivityWeek: {
+          UNKNOWN: 'Wednesday',
+          ON_FOOT: 'Tuesday',
+          IN_VEHICLE: 'Sunday'
+        },
+        mostOccurencesPerActivityHour: {
+          UNKNOWN: '12:00',
+          ON_FOOT: '13:00',
+          IN_VEHICLE: '14:00'
+        },
       },
       loading: false,
       error: "",
@@ -139,10 +258,7 @@ export default {
   },
   methods: {
     async queryServer() {
-      var admin = this.$route.query.admin;
-      admin = admin ? admin : false;
-
-      const url = admin ? "admin" : "user";
+      const url = this.isAdmin ? "admin" : "user";
 
       const filters = {
         atDate: this.atDate,
@@ -170,11 +286,30 @@ export default {
 
       this.loading = false;
     },
-    exportCurrentData() {
-        if (this.data == undefined){
-            return
-        }
+    download(data, filename, type) {
+      var file = new Blob([data], {type: type});
+      if (window.navigator.msSaveOrOpenBlob) // IE10+
+          window.navigator.msSaveOrOpenBlob(file, filename);
+      else { // Others
+          var a = document.createElement("a"),
+                  url = URL.createObjectURL(file);
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function() {
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);  
+          }, 0); 
+    }},
+      exportCurrentData() {
+      if (this.data == undefined){
+          return
+      }
+
+      this.download(this.data, 'export.json', 'text/plain')
     }
+}
   }
 };
 </script>
