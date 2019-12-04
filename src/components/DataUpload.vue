@@ -42,6 +42,8 @@
       />
     </GmapMap>
 
+    <v-btn v-loading="loading" class="mt-2 mb-2" @click="sendData">Upload Data</v-btn>
+
     <p style="color: red;">{{ error }}</p>
   </v-col>
 </template>
