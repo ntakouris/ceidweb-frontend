@@ -86,20 +86,24 @@
 
     <!-- Activity Types -->
     <p>Filter Activity Types</p>
-    <v-overflow-btn v-for="(selection, index) in selectedActivityTypes" :key="index"
+    <v-overflow-btn
+      v-for="(selection, index) in selectedActivityTypes"
+      :key="index"
       :items="availableActivityTypes"
       @change="(e) => { selectedActivityTypes[index] = e }"
     ></v-overflow-btn>
 
     <v-row>
-        <v-btn class="mr-2" color="primary" @click="selectedActivityTypes.push('*')">Add activity type</v-btn>
-        <v-btn color="error" @click="selectedActivityTypes = ['*']">Clear activity filters</v-btn>
+      <v-btn class="mr-2" color="primary" @click="selectedActivityTypes.push('*')">Add activity type</v-btn>
+      <v-btn color="error" @click="selectedActivityTypes = ['*']">Clear activity filters</v-btn>
     </v-row>
     <v-spacer />
     <v-row class="mt-2">
-        <v-btn class="mr-2" color="primary" @click="queryServer">Query Server</v-btn>
-        <v-btn color="accent" @click="exportCurrentData">Export current data</v-btn>
+      <v-btn class="mr-2" color="primary" @click="queryServer" :loading="loading">Query Server</v-btn>
+      <v-btn color="accent" @click="exportCurrentData" v-if="data != undefined">Export current data</v-btn>
     </v-row>
+
+    <p style="color: red;">{{ error }}</p>
 
     <!-- Visualizations -->
 
@@ -107,12 +111,17 @@
 </template>
 
 <script>
-const availableActivityTypes = ['*', 'UNKNOWN', 'ON_FOOT', 'IN_VEHICLE']
+const availableActivityTypes = ["*", "UNKNOWN", "ON_FOOT", "IN_VEHICLE"];
 
 export default {
   name: "DataQueries",
   data() {
     return {
+      data: {
+
+      },
+      loading: false,
+      error: "",
       dateRangeEnabled: false,
       atDate: new Date().toISOString().substr(0, 10),
       atDateMenu: false,
@@ -129,11 +138,42 @@ export default {
     };
   },
   methods: {
-    async queryServer(){
-        
-    },
-    exportCurrentData(){
+    async queryServer() {
+      var admin = this.$route.query.admin;
+      admin = admin ? admin : false;
 
+      const url = admin ? "admin" : "user";
+
+      const filters = {
+        atDate: this.atDate,
+        atTime: this.atTime,
+        untilDate: this.untilDate,
+        untilTime: this.untilTime,
+        activityTypes: this.selectedActivityTypes.filter(x => x !== "*")
+      };
+
+      if (this.loading) {
+        return;
+      }
+
+      this.loading = true;
+
+      try {
+        const { response: data } = await this.axios.get(
+          `${url}/query`,
+          filters
+        );
+        this.data = response;
+      } catch (e) {
+        this.error = e.response.data;
+      }
+
+      this.loading = false;
+    },
+    exportCurrentData() {
+        if (this.data == undefined){
+            return
+        }
     }
   }
 };
