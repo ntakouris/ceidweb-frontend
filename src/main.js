@@ -5,7 +5,10 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
- 
+import VueGoogleCharts from 'vue-google-charts'
+
+Vue.use(VueGoogleCharts)
+
 Vue.use(VueAxios, axios)
 
 axios.defaults.baseURL = 'localhost:8001' // TODO: Change
