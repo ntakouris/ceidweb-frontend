@@ -80,35 +80,42 @@ export default {
   },
   methods: {
     async loginAsync () {
-      const username = this.login.username
-      const pw = this.login.password
-
-      this.axios.defaults.headers.common['Authorization'] = `Basic ${username}:${pw}`;
+      const creds = `${this.login.username}:${this.login.password}`
+      this.axios.defaults.headers.common['Authorization'] = `Basic ${creds}`
+      console.log(this.axios.defaults.headers.common['Authorization'])
 
       try {
-        loading = true
-        const { response: data } = await this.axios.get('/user/login')
+        this.loading = true
+        const response = await this.axios.post('/login')
         
+        console.log('commit store')
+        console.log(response)
         this.$store.commit('setLoggedIn', true, response.admin)
         this.$store.commit('setUserDetails', {
-          username: response.username,
-          fullname: response.fullname,
-          id: response.userId
+          username: response.username
         })
 
+        console.log('pushing dashboard')
         this.$router.push({ path: '/dashboard', query: { admin: false }})
       } catch (e) {
-        this.login.error = e.response.data
+        this.login.error = e.response
       }
 
-      loading = false
+      this.loading = false
     },
     async registerAsync() {
-      this.axios.defaults.headers.common['Authorization'] = `Basic ${username}:${pw}`;
+      console.log('registerAsync')
+      console.log(`${this.register.username}:${this.register.password}`)
+
+      const creds = `${this.login.username}:${this.login.password}`
+      this.axios.defaults.headers.common['Authorization'] = `Basic ${creds}`
+      console.log(this.axios.defaults.headers.common['Authorization'])
 
       try {
-        loading = true
-        const response = await this.axios.post('/user/register', this.register)
+        this.loading = true
+        console.log('register')
+        await this.axios.post('/register', this.register)
+        console.log('success')
 
         // auto log in
         this.login.username = this.register.username
@@ -116,10 +123,10 @@ export default {
 
         await this.loginAsync()
       } catch (e) {
-        this.register.error = e.response.data
+        this.register.error = e.response
       }
 
-      loading = false
+      this.loading = false
     }
   }
 };

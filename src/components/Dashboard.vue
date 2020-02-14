@@ -233,12 +233,13 @@ export default {
     var admin = this.$route.query.admin;
     admin = admin ? admin : false;
 
-    const url = admin ? "admin" : "user";
-    return;
+    const filters = {
+      admin: admin
+    }
 
     try {
       loading = true;
-      //const { response: data } = await this.axios.get(`/${url}/dashboard`);
+      const { response: data } = await this.axios.get(`/dashboard`, filters);
 
       this.data = response;
     } catch (e) {

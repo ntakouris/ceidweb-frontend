@@ -139,28 +139,27 @@ export default {
   },
   methods: {
     async queryServer() {
-      var admin = this.$route.query.admin;
-      admin = admin ? admin : false;
-
-      const url = admin ? "admin" : "user";
+      var admin = this.$route.query.admin
+      admin = admin ? admin : false
 
       const filters = {
         atDate: this.atDate,
         atTime: this.atTime,
         untilDate: this.untilDate,
         untilTime: this.untilTime,
-        activityTypes: this.selectedActivityTypes.filter(x => x !== "*")
-      };
-
-      if (this.loading) {
-        return;
+        activityTypes: this.selectedActivityTypes.filter(x => x !== "*"),
+        admin: admin
       }
 
-      this.loading = true;
+      if (this.loading) {
+        return
+      }
+
+      this.loading = true
 
       try {
         const { response: data } = await this.axios.get(
-          `${url}/query`,
+          `dashboard/q`,
           filters
         );
         this.data = response;

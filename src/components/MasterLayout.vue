@@ -16,7 +16,7 @@
     <v-app-bar app clipped-right color="blue-grey" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title v-if="!loggedIn">Please log in or register to view data</v-toolbar-title>
-      <v-toolbar-title v-else>Hello {{ userDetails.fullname }}</v-toolbar-title>
+      <v-toolbar-title v-else>Hello {{ userDetails.username }}</v-toolbar-title>
 
       <v-spacer />
       <v-app-bar-nav-icon @click.stop="drawerRight = !drawerRight" v-if="loggedIn"/>

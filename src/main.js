@@ -20,7 +20,9 @@ Vue.use(VueGoogleCharts)
 
 Vue.use(VueAxios, axios)
 
-axios.defaults.baseURL = 'localhost:8001' // TODO: Change
+axios.defaults.baseURL = 'http://localhost:5000'
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
+axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 Vue.config.productionTip = false
 
