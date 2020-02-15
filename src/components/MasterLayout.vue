@@ -143,7 +143,7 @@ export default {
       return this.$store.state.isAdmin;
     },
     userDetails() {
-      return this.$store.state.details;
+      return this.$store.state.userDetails;
     }
   },
   methods: {

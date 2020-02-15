@@ -34,10 +34,10 @@ export default {
         }
 
         try {
-            const { response: data } = await this.axios.post('/admin/purge')
-            this.message = response;
+            const { data } = await this.axios.post('/purge')
+            this.message = data;
         } catch (e) {
-            this.message = e.response.data;
+            this.message = e.message;
         }
 
         this.loading = false

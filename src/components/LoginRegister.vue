@@ -86,19 +86,20 @@ export default {
 
       try {
         this.loading = true
-        const response = await this.axios.post('/login')
+        const {data} = await this.axios.post('/login')
         
         console.log('commit store')
-        console.log(response)
-        this.$store.commit('setLoggedIn', true, response.admin)
+        console.log(data)
+        this.$store.commit('setLoggedIn', true, data.admin)
         this.$store.commit('setUserDetails', {
-          username: response.username
+          username: data.username,
+          userId: data.userId
         })
 
         console.log('pushing dashboard')
         this.$router.push({ path: '/dashboard', query: { admin: false }})
       } catch (e) {
-        this.login.error = e.response
+        this.login.error = e.message
       }
 
       this.loading = false
@@ -123,7 +124,7 @@ export default {
 
         await this.loginAsync()
       } catch (e) {
-        this.register.error = e.response
+        this.register.error = e.message
       }
 
       this.loading = false

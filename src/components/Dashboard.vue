@@ -2,8 +2,8 @@
   <v-col col="12">
     <v-progress-circular indeterminate color="primary" v-if="loading"></v-progress-circular>
 
-    <div v-else>
-      <v-card class="mx-auto" outlined v-if="data.score">
+    <div>
+      <v-card class="mx-auto" outlined v-if="data.statistics.score">
         <v-list-item three-line>
           <v-list-item-content>
             <v-list-item-title class="headline mb-1">Monthly Activity Score</v-list-item-title>
@@ -12,18 +12,18 @@
 
         <v-card-text>
         <v-col col="3">
-        <p style="display: inline;" class="mr-3">This Month's score</p>
+        <p style="display: inline;" class="mr-3">This Month's score <br /></p>
         <v-progress-circular
           :rotate="-90"
           :size="100"
           :width="15"
-          :value="data.score"
+          :value="data.statistics.score * 100"
           color="primary"
-        >{{ data.score }}</v-progress-circular>
+        >{{ Math.trunc(data.statistics.score * 100)}}</v-progress-circular>
         </v-col>
 <v-col col="9">
         <pure-vue-chart class="mx-auto"
-            :points="data.scores"
+            :points="data.statistics.scores.map(x => Math.trunc(x * 100))"
             :show-y-axis="true"
             :show-x-axis="true"
             :show-values="true"
@@ -35,7 +35,7 @@
         </v-card-text>
       </v-card>
 
-      <v-card class="mx-auto mt-2" outlined v-if="data.leaderboards">
+      <v-card class="mx-auto mt-2" outlined v-if="data.statistics.leaderboards">
         <v-list-item three-line>
           <v-list-item-content>
             <v-list-item-title class="headline">Leaderboards</v-list-item-title>
@@ -44,9 +44,7 @@
         <v-card-text>
 
         <v-simple-table
-            :dense="dense"
             :fixed-header="fixedHeader"
-            :height="height"
             >
                 <thead>
                 <tr>
@@ -55,18 +53,18 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in data.leaderboards.top" :key="item.name">
+                <tr v-for="item in data.statistics.leaderboards.top" :key="item.name">
                     <td>{{ item.name }}</td>
                     <td>{{ item.score }}</td>
                 </tr>
                 </tbody>
             </v-simple-table>
 
-        <p class="mt-2">Your position: <b>{{ data.leaderboards.pos }}</b></p>
+        <p class="mt-2">Your position: <b>{{ data.statistics.leaderboards.pos }}</b></p>
         </v-card-text>
       </v-card>
 
-      <v-card class="mx-auto mt-2" outlined v-if="data.uploads">
+      <v-card class="mx-auto mt-2" outlined v-if="data.statistics.uploads">
         <v-list-item three-line>
           <v-list-item-content>
             <v-list-item-title class="headline">Upload statistics</v-list-item-title>
@@ -74,8 +72,8 @@
         </v-list-item>
         <v-card-text>
 
-        <p class="mt-2">Dates covered: <b>{{ uploadRanges[0] }} -- {{ uploadRanges[1] }}</b></p>
-        <p class="mt-2">Last upload date: <b>{{ lastUpload }}</b></p>
+        <p class="mt-2">Dates covered: <b>{{ data.statistics.uploads.range[0] }} -- {{ data.statistics.uploads.range[1] }}</b></p>
+        <p class="mt-2">Last upload date: <b>{{ data.statistics.uploads.last }}</b></p>
 
         </v-card-text>
       </v-card>
@@ -90,9 +88,6 @@
         <v-card-text>
 
          <v-simple-table
-            :dense="dense"
-            :fixed-header="fixedHeader"
-            :height="height"
             >
                 <thead>
                 <tr>
@@ -221,32 +216,22 @@ export default {
       }
     };
   },
-  computed: {
-      uploadRanges(){
-          return this.data.uploads.range.map(x => new Date(x).toDateString())
-      },
-      lastUpload(){
-        return new Date(this.data.uploads.last).toDateString()
-      }
-  },
   async mounted() {
     var admin = this.$route.query.admin;
     admin = admin ? admin : false;
 
-    const filters = {
-      admin: admin
-    }
-
     try {
-      loading = true;
-      const { response: data } = await this.axios.get(`/dashboard`, filters);
-
-      this.data = response;
+      this.loading = true;
+      console.log('request')
+      const { data } = await this.axios.get(`/dashboard?admin=${admin}`);
+      console.log(data)
+      console.log('loading to .statistics')
+      this.data.statistics = data.statistics;
     } catch (e) {
-      this.register.error = e.response.data;
+      this.error = e.message
     }
 
-    loading = false;
+    this.loading = false;
   }
 };
 </script>

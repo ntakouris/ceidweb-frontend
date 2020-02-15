@@ -42,7 +42,7 @@
       />
     </GmapMap>
 
-    <v-btn v-loading="loading" class="mt-2 mb-2" @click="sendData">Upload Data</v-btn>
+    <v-btn :loading="loading" class="mt-2 mb-2" @click="sendData">Upload Data</v-btn>
 
     <p style="color: red;">{{ error }}</p>
   </v-col>
@@ -93,29 +93,34 @@ export default {
       this.circles = [];
     },
     async loadDataFromFile(ev) {
-      return;
       this.rawData = undefined;
       const file = ev.target.files[0];
       const reader = new FileReader();
-
+      const that = this
       reader.onload = e => {
-        const data = JSON.parse(e.target.result);
-
+        console.log('finished loading')
+        var data = JSON.parse(e.target.result);
+        console.log(data.locations)
         // filter data out of patras
-        this.rawData = data.filter(
-          x =>
-            distanceInKmBetweenEarthCoordinates(
-              x.latitude,
-              x.longitude,
-              patrasLat,
-              patrasLng
-            ) <= 10
-        );
+        // that.rawData = data.locations.filter(
+        //   x =>
+        //     that.distanceInKmBetweenEarthCoordinates(
+        //       x.latitude,
+        //       x.longitude,
+        //       patrasLat,
+        //       patrasLng
+        //     ) <= 10
+        // );
+
+        that.rawData = data.locations
       };
+
+      console.log(`reading ${file}`)
       reader.readAsText(file);
     },
     async sendData() {
-      this.filteredData = this.circles.map(function(c) {
+      const that = this
+      this.filterCircles = this.circles.map(function(c) {
         return {
           center: {
             lat:
@@ -126,26 +131,32 @@ export default {
               typeof c.center.lng === "function" ? c.center.lng() : c.center.lng
           },
           distanceKm: c.radius * 1000
-        };
-      });
+        }
+      })
 
-      for (circle of filterCircles) {
-        this.filteredData = filteredData.filter(
-          x =>
-            distanceInKmBetweenEarthCoordinates(
-              x.latitude,
-              x.longitude,
-              circle.lat,
-              circle.lng
-            ) <= circle.distanceKm
-        );
-      }
+      console.log('Filtering data to upload to server, circles:')
+      console.log(this.circles)
 
+      this.filteredData = this.rawData
+      // for (var circle of this.circles) {
+      //   this.filteredData = this.rawData.filter(
+      //     x =>
+      //       that.distanceInKmBetweenEarthCoordinates(
+      //         x.latitude,
+      //         x.longitude,
+      //         circle.lat,
+      //         circle.lng
+      //       ) <= circle.distanceKm
+      //   );
+      // }
+
+      console.log(this.filteredData)
       try {
-        await this.axios.post("/user/upload", filteredData);
+        await this.axios.post("/upload", {locations: this.filteredData});
+        console.log('going to dashboard')
         this.$router.replace("/dashboard");
       } catch (e) {
-        this.error = e.response.data;
+        this.error = e.message;
       }
     },
     degreesToRadians(degrees) {
@@ -154,11 +165,11 @@ export default {
     distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
       var earthRadiusKm = 6371;
 
-      var dLat = degreesToRadians(lat2 - lat1);
-      var dLon = degreesToRadians(lon2 - lon1);
+      var dLat = this.degreesToRadians(lat2 - lat1);
+      var dLon = this.degreesToRadians(lon2 - lon1);
 
-      lat1 = degreesToRadians(lat1);
-      lat2 = degreesToRadians(lat2);
+      lat1 = this.degreesToRadians(lat1);
+      lat2 = this.degreesToRadians(lat2);
 
       var a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +

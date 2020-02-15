@@ -106,7 +106,7 @@
     <p style="color: red;">{{ error }}</p>
 
     <!-- Visualizations -->
-
+    
   </v-col>
 </template>
 
@@ -142,14 +142,21 @@ export default {
       var admin = this.$route.query.admin
       admin = admin ? admin : false
 
-      const filters = {
-        atDate: this.atDate,
-        atTime: this.atTime,
-        untilDate: this.untilDate,
-        untilTime: this.untilTime,
-        activityTypes: this.selectedActivityTypes.filter(x => x !== "*"),
-        admin: admin
+      var queryString = `?admin=${admin}`
+
+      if (this.atDate) {
+        queryString += `&at=${new Date(this.atDate).getTime() / 1000}`
       }
+
+      if (this.untilDate && this.dateRangeEnabled) {
+        queryString += `&until=${new Date(this.untilDate).getTime() / 1000}`
+      }
+
+      this.selectedActivityTypes.filter(x => x !== '*').forEach(x => {
+        queryString += `&content=${x}`
+      });
+
+      console.log(queryString)
 
       if (this.loading) {
         return
@@ -158,13 +165,13 @@ export default {
       this.loading = true
 
       try {
-        const { response: data } = await this.axios.get(
-          `dashboard/q`,
-          filters
-        );
-        this.data = response;
+        console.log('Query server')
+        const { data } = await this.axios.get(`/q${queryString}`);
+
+        console.log(data)
+        this.data = data
       } catch (e) {
-        this.error = e.response.data;
+        this.error = e.message
       }
 
       this.loading = false;
@@ -173,6 +180,7 @@ export default {
         if (this.data == undefined){
             return
         }
+        
     }
   }
 };
