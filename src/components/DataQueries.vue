@@ -115,10 +115,66 @@ const availableActivityTypes = ["*", "UNKNOWN", "ON_FOOT", "IN_VEHICLE"];
 
 export default {
   name: "DataQueries",
+  mounted(){
+      var admin = this.$route.query.admin
+      admin = admin ? admin : false
+      this.isAdmin = admin
+
+    const that = this
+    this.$refs.map.$mapPromise.then(map => {
+      that.map = map;
+      });
+    
+  },
+  watch: {
+    data: {
+    immediate: true, 
+    handler (val, oldVal) {
+      if (!this.map){
+        return
+      }
+
+      if(this.heatmap){
+        this.heatmap.map = null
+      }
+
+      this.heatmap = new google.maps.visualization.HeatmapLayer({
+        data: this.data.heatmap.map(x => new google.maps.LatLng(x.lat, x.lng)),
+        map: this.map
+      })
+
+      this.heatmap.setMap(this.map)
+    }
+  }
+  },
   data() {
     return {
+      map: undefined,
+      heatmap: undefined,
+      isAdmin: false,
       data: {
-
+        heatmap: [
+          {lat: 38.230462, lng: 21.75315},
+          {lat: 38.230463, lng: 21.75316},
+          {lat: 38.230464, lng: 21.75317},
+          {lat: 38.230465, lng: 21.75318}
+        ],
+        perActivity: [
+          ['Activity Type', 'Occurences'],
+          ['UNKNOWN', 300],
+          ['ON_FOOT', 900],
+          ['IN_VEHICLE', 1000],
+        ],
+        mostOccurencesPerActivityWeek: {
+          UNKNOWN: 'Wednesday',
+          ON_FOOT: 'Tuesday',
+          IN_VEHICLE: 'Sunday'
+        },
+        mostOccurencesPerActivityHour: {
+          UNKNOWN: '12:00',
+          ON_FOOT: '13:00',
+          IN_VEHICLE: '14:00'
+        },
       },
       loading: false,
       error: "",
@@ -182,6 +238,7 @@ export default {
         }
         
     }
+}
   }
 };
 </script>
